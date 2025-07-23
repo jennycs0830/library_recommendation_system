@@ -1,0 +1,57 @@
+{
+    "1": {
+        "gender": "女",
+        "age": "青年",
+        "preferred_genres": [
+            "自然科學",
+            "科技"
+        ],
+        "questionnaire": {
+            "q1": "人工智慧概論，和我的興趣符合",
+            "q2": "實用工具書，深度思考",
+            "q3": "生成式AI",
+            "q4": " 開拓視野"
+        }
+    },
+    "0": {
+        "gender": "男",
+        "age": "兒童",
+        "preferred_genres": [
+            "兒童",
+            "社會科學",
+            "文學"
+        ],
+        "questionnaire": {
+            "q1": "愛麗絲夢遊仙境",
+            "q2": "輕鬆幽默",
+            "q3": "迪士尼",
+            "q4": "有趣"
+        }
+    },
+    "test": {
+        "gender": "男",
+        "age": "兒童",
+        "preferred_genres": [
+            "文學"
+        ],
+        "questionnaire": {
+            "q1": "1",
+            "q2": "1",
+            "q3": "1",
+            "q4": "1"
+        }
+    },
+    "test1": {
+        "gender": "男",
+        "age": "兒童",
+        "preferred_genres": [
+            "文學"
+        ],
+        "questionnaire": {
+            "q1": "1",
+            "q2": "1",
+            "q3": "1",
+            "q4": "1"
+        }
+    }
+}
