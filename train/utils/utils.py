@@ -12,6 +12,25 @@ from clearml import Logger
 import os
 import tempfile
 from datetime import datetime
+from sklearn.preprocessing import LabelEncoder
+from torch.utils.data import TensorDataset
+
+def get_supervised_dataset(encoded_embeddings, df, attr):
+    label_encoder = LabelEncoder()
+    int_labels = label_encoder.fit_transform(df[attr])
+    print(f"Unique labels: {label_encoder.classes_}")
+    n_prototype = len(np.unique(int_labels))
+    print(f"Number of unique labels: {n_prototype}")
+
+    label_mapping = dict(zip(label_encoder.classes_, range(len(label_encoder.classes_))))
+    if not isinstance(encoded_embeddings, torch.Tensor):
+        encoded_embeddings = torch.tensor(encoded_embeddings, dtype=torch.float32)
+
+    int_labels = torch.tensor(int_labels, dtype=torch.long)
+    dataset = TensorDataset(encoded_embeddings, int_labels)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=64, shuffle=True)
+
+    return dataloader, n_prototype
 
 def clean_synopsis(text):
     text = normalize_width(text)
@@ -93,6 +112,7 @@ def plot_embeddings_plotly(
     method='pca',
     title='Interactive Embedding Visualization',
     logger: Logger = None,
+    task = None,
     step: int = 0
 ):
     # Convert to numpy if torch
@@ -140,8 +160,8 @@ def plot_embeddings_plotly(
     print(f"Saved interactive plot to: {html_path}")
 
     # Upload to ClearML
-    if logger:
-        uploaded_path = logger.upload_file(html_path)
+    if task and logger:
+        uploaded_path = task.upload_artifact(artifact_object=html_path, name=title)
         logger.report_text(f"[{title} - Interactive Plot]({uploaded_path})", iteration=step)
         print(f"Uploaded to ClearML: {uploaded_path}")
 

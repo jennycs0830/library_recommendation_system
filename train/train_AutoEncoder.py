@@ -24,8 +24,8 @@ def parse_args():
     parser.add_argument('--epochs', type=int, default=250, help="Number of epochs for training")
     parser.add_argument('--input_dim', type=int, default=768, help="Input dimension for the model")
     parser.add_argument('--hidden_dim1', type=int, default=512, help="First hidden dimension for the model")
-    parser.add_argument('--hidden_dim2', type=int, default=384, help="Second hidden dimension for the model")
-    parser.add_argument('--bottleneck_dim', type=int, default=192, help="Bottleneck dimension for the model")                        
+    parser.add_argument('--hidden_dim2', type=int, default=192, help="Second hidden dimension for the model")
+    parser.add_argument('--bottleneck_dim', type=int, default=96, help="Bottleneck dimension for the model")                        
 
     parser.add_argument("--ckpt_folder", type=str, default="checkpoints", help="Folder to save model checkpoints")
     parser.add_argument("--resume", action="store_true", help="Resume training from the last checkpoint")

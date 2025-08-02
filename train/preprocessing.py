@@ -38,11 +38,11 @@ def parse_args():
 def main():
     args = parse_args()
 
-    task = Task.init(project_name="AI recomender", task_name="Dataset preprocessing", task_type=Task.TaskTypes.optimizer)
+    task = Task.init(project_name="AI_recommender", task_name="Dataset preprocessing", task_type=Task.TaskTypes.optimizer)
     task.connect(args)
     logger = task.get_logger()
 
-    dataset = Dataset.get(dataset_name=args.dataset_name, dataset_project="AI recommender")
+    dataset = Dataset.get(dataset_name=args.dataset_name, dataset_project="AI_recommender")
     path = dataset.get_local_copy()
     df = pd.read_csv(os.path.join(path, args.dataset_file), header=1)
     print(f"Dataset {args.dataset_name} downloaded to {path}")
@@ -76,12 +76,12 @@ def main():
 
     # save and upload cleaned dataset
     df['bi_content'] = cleaned_content
-    cleaned_dataset_path = f"{args.data_folder}/{args.dataset_file}"
+    cleaned_dataset_path = f"{args.data_folder}/books_with_intro_cleaned.csv"
     df.to_csv(cleaned_dataset_path, index=False)
     print(f"Cleaned dataset saved to {cleaned_dataset_path}")
 
     # upload cleaned dataset to ClearML
-    cleaned_dataset = Dataset.create(dataset_name=args.dataset_name + "_cleaned", dataset_project="AI recommender")
+    cleaned_dataset = Dataset.create(dataset_name=args.dataset_name + "_cleaned", dataset_project="AI_recommender")
     cleaned_dataset.add_files(cleaned_dataset_path)
     cleaned_dataset.upload()
     cleaned_dataset.finalize()
@@ -111,7 +111,7 @@ def main():
     torch.save(train_tensor, "train_embeddings.pt")
     torch.save(test_tensor, "test_embeddings.pt")
     
-    embeddings_dataset = Dataset.create(dataset_name="embeddings_db", dataset_project="AI recommender")
+    embeddings_dataset = Dataset.create(dataset_name="embeddings_db", dataset_project="AI_recommender")
     embeddings_dataset.add_files("all_embeddings.pt")
     embeddings_dataset.add_files("train_embeddings.pt")
     embeddings_dataset.add_files("test_embeddings.pt")
