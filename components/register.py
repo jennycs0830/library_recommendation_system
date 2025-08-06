@@ -6,33 +6,22 @@ import openai
 import torch
 from sentence_transformers import SentenceTransformer
 
-from components.utils import encode_user_embedding
+from components.utils import encode_user_embedding, get_pg_connection
 
-openai.api_key = "[your api key]"
-
-@ st.cache_resource
-def connect_db():
-    conn = psycopg2.connect(
-        dbname="library_db",
-        user="[your user name]",
-        password="[your password]",
-        host="localhost",
-        port="5432"
-    )
-    cur = conn.cursor()
-    return cur, conn
+openai.api_key = "[your openai key]"
 
 @ st.cache_resource
 def load_embedding_model():
     model = SentenceTransformer('shibing624/text2vec-base-chinese')
     return model
 
-cur, conn = connect_db() 
 embedding_model = load_embedding_model()
 
 def user_exists(username):
-    cur.execute("SELECT 1 FROM users WHERE username = %s", (username, ))
-    return cur.fetchone() is not None
+    with get_pg_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1 FROM users WHERE username = %s", (username, ))
+            return cur.fetchone() is not None
 
 def insert_user(username, user_profile, user_embedding, gender, age, genres):
     create_user = """
@@ -40,12 +29,14 @@ def insert_user(username, user_profile, user_embedding, gender, age, genres):
         VALUES (%s, %s, %s, %s, %s, %s)
         RETURNING user_id;
     """
-    genres = ", ".join(genres)
-    values = (username, gender, age, genres, user_profile, user_embedding)
-    cur.execute(create_user, values)
-    user_id = cur.fetchone()[0]
-    conn.commit()
-    print(f"User {username} created successfully with user_id {user_id}.")
+    with get_pg_connection() as conn:
+        with conn.cursor() as cur:
+            genres = ", ".join(genres)
+            values = (username, gender, age, genres, user_profile, user_embedding)
+            cur.execute(create_user, values)
+            user_id = cur.fetchone()[0]
+            conn.commit()
+            print(f"User {username} created successfully with user_id {user_id}.")
 
     return user_id
 

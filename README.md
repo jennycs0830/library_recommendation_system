@@ -3,46 +3,37 @@
 ## Overview
 The Library Recommendation System is a web application designed to help users discover books based on their preferences and interactions. The application allows users to register, log in, browse available books, and receive personalized book recommendations.
 
-## Project Structure
-```
-library_recommendation_system
-├── src
-│   ├── app.py                  # Main entry point of the application
-│   ├── pages                   # Contains different pages of the application
-│   │   ├── register.py         # User registration logic
-│   │   ├── login.py            # User login functionality
-│   │   ├── recommendations.py   # Book recommendations display
-│   │   └── browse.py           # Book browsing functionality
-│   ├── components              # Reusable components for the application
-│   │   ├── user_info.py        # User information display in the sidebar
-│   │   ├── book_card.py        # Individual book card layout and functionality
-│   │   ├── sidebar.py          # Sidebar layout and navigation
-│   │   └── pagination.py       # Pagination logic for book display
-│   ├── utils                   # Utility functions
-│   │   ├── model.py            # Model loading and management
-│   │   └── data.py             # Data loading and saving functions
-│   └── types                   # Custom types and interfaces
-│       └── index.py            # Type definitions
-├── data                        # Data files
-│   ├── users.json              # User data in JSON format
-│   ├── books_with_intro_cleaned.csv # Book information in CSV format
-│   ├── interactions.csv         # User interactions log
-│   └── default_cover.jpeg       # Default cover image
-├── requirements.txt             # Project dependencies
-└── README.md                    # Project documentation
-```
-
 ## Setup Instructions
-1. Clone the repository:
+1. __Clone the repository__
    ```
-   git clone <repository-url>
+   git clone https://github.com/jennycs0830/library_recommendation_system.git
    cd library_recommendation_system
    ```
 
-2. Install the required dependencies:
+2. __Install the required dependencies__
    ```
    pip install -r requirements.txt
    ```
+
+3. __Build docker images__
+   - Autoencoder image: 
+     ```
+     docker build -f docker/Dockerfile.autoencoder -t autoencoder-api
+     ```
+   - Clustering image: 
+      ```
+      docker build -f docker/Dockerfile.clustering -t clustering-api .
+      ```
+
+4. __Run docker images__
+   - Autoencoder API (http://localhost:8002/encode)
+     ```
+     docker run -d --name autoencoder-api -p 8002:8002 autoencoder-api
+     ```
+   - Clustering API (http://localhost:8003/encode)
+     ```
+     docker run -d --name clustering-api -p 8003:8003 clustering-api
+     ```
 
 3. Run the application:
    ```
