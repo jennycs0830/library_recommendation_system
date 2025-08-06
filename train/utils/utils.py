@@ -154,16 +154,19 @@ def plot_embeddings_plotly(
     # Save to HTML with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"{title.replace(' ', '_')}_{timestamp}.html"
-    html_path = os.path.join(tempfile.gettempdir(), filename)
+    # html_path = os.path.join("plot", filename)
+    html_path = f"plot/{filename}"
     fig.write_html(html_path)
+    assert os.path.exists(html_path), f"HTML not saved: {html_path}"
 
     print(f"Saved interactive plot to: {html_path}")
 
     # Upload to ClearML
     if task and logger:
-        uploaded_path = task.upload_artifact(artifact_object=html_path, name=title)
-        logger.report_text(f"[{title} - Interactive Plot]({uploaded_path})", iteration=step)
-        print(f"Uploaded to ClearML: {uploaded_path}")
+        task.upload_artifact(artifact_object=html_path, name=title)
+        logger.report_media(title=title, series="clustering plot", local_path=title)
+        # logger.report_text(f"[{title} - Interactive Plot]({uploaded_path})", iteration=step)
+        # print(f"Uploaded to ClearML: {uploaded_path}")
 
     return html_path
 

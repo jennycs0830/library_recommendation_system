@@ -16,6 +16,7 @@ if "user" not in st.session_state:
 display_sidebar(st.session_state.user)
 
 if st.session_state.user:
+    # print("============ BOOK BROWSING RERUN ============")
     book_browsing()
 else:
     page = st.sidebar.radio("請選擇操作", ["🔐 登入", "📋 註冊"])

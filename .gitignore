@@ -1,1 +1,9 @@
 train/*.pt
+data/*.csv
+data/books_with_intro.csv
+data/books.csv
+database/book_ids.npy
+database/faiss_books.index
+data/encoded_embeddings.pt
+test.ipynb
+docker-compose.yml

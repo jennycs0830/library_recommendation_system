@@ -2,46 +2,72 @@ import pandas as pd
 import os
 from datetime import datetime
 import streamlit as st
+import numpy as np
 
-ACTION_WEIGHTS = {
-    '瀏覽': 1,
-    '收藏': 2,
-    '預約': 3,
-    '借閱': 4
-}
-DATA_FOLDER = "data"
-INTERACTIONS_DB = os.path.join(DATA_FOLDER, "interactions.csv")
+from components.utils import get_pg_connection, get_book_metadata
 
-def log_interaction(user_id, book, interaction_type):
-    log = {
-        "timestamp": datetime.now().isoformat(),
-        "user_id": user_id,
-        "book_id": book["bi_id"],
-        "book_title": book["bi_title"],
-        'book_category': book.get("category", "—"),
-        "action_type": interaction_type,
-        "score": ACTION_WEIGHTS.get(interaction_type, 0)
-    }
-    os.makedirs(DATA_FOLDER, exist_ok=True)
-    if not os.path.exists(INTERACTIONS_DB):
-        pd.DataFrame([log]).to_csv(INTERACTIONS_DB, index=False)
-    else:
-        interaction_df = pd.read_csv(INTERACTIONS_DB)
-        interaction_df = pd.concat([interaction_df, pd.DataFrame([log])])
-        interaction_df.to_csv(INTERACTIONS_DB, index=False)
+def log_interaction(user_id, book_id, interaction_type):
+    # Corrected SQL syntax
+    add_interaction = """
+    INSERT INTO interactions (user_id, book_id, interaction_type)
+    VALUES (%s, %s, %s);
+    """
 
-def display_interaction_history(user_id, interactions_db):
+    with get_pg_connection() as conn:
+        with conn.cursor() as cur:
+            # Step 1: Insert interaction
+            cur.execute(add_interaction, (user_id, book_id, interaction_type))
+            print("ACTION: log interaction")
+
+            # Step 2: Get current user embedding
+            cur.execute("SELECT user_embedding FROM users WHERE user_id = %s;", (user_id,))
+            user_embedding = cur.fetchone()[0]
+            print("ACTION: get current user embedding")
+
+            # Step 3: Get book embedding
+            cur.execute("SELECT embedding FROM book_embeddings WHERE book_id = %s;", (book_id,))
+            book_embedding = cur.fetchone()[0]
+            print("ACTION: get current book embedding")
+
+            # Step 4: Convert to numpy arrays
+            user_embedding = np.array(user_embedding)
+            book_embedding = np.array(book_embedding)
+
+            # Step 5: Update user embedding
+            updated_user_embedding = 0.9 * user_embedding + 0.1 * book_embedding
+
+            # Step 6: Save back to DB
+            cur.execute(
+                "UPDATE users SET user_embedding = %s WHERE user_id = %s;",
+                (updated_user_embedding.tolist(), user_id)
+            )
+            print("ACTION: update user embedding")
+
+        conn.commit()
+
+
+def display_interaction_history(user_id):
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 📚 行為紀錄")
-    if os.path.exists(interactions_db):
-        interaction_df = pd.read_csv(interactions_db)
-        interaction_df['user_id'] = interaction_df['user_id'].astype(str)
-        user_df = interaction_df[interaction_df['user_id'] == str(user_id)]
-        if not user_df.empty:
-            recent = user_df.sort_values("timestamp", ascending=False)
-            for _, row in recent.iterrows():
-                st.sidebar.write(f"📘 {row['book_title']} | {row['book_category']} | {row['action_type']} | 🕒 {row['timestamp'][:19]}")
-        else:
-            st.sidebar.info("尚無行為紀錄")
-    else:
-        st.sidebar.info("尚無行為紀錄")
+
+    with get_pg_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT book_id, interaction_type, interaction_timestamp
+                FROM interactions
+                WHERE user_id = %s
+                ORDER BY interaction_timestamp DESC
+            """, (user_id,))
+            interaction_his = cur.fetchall()
+
+            if interaction_his:
+                for book_id, interaction_type, interaction_timestamp in interaction_his:
+                    book_metadata = get_book_metadata(book_id)[0]
+                    title = book_metadata.get("title", "未知書名")
+                    category = book_metadata.get("category", "未知分類")
+                    time_str = interaction_timestamp.strftime("%Y-%m-%d %H:%M:%S") \
+                        if hasattr(interaction_timestamp, "strftime") else str(interaction_timestamp)[:19]
+                    
+                    st.sidebar.write(f"📘 {title} | {category} | {interaction_type} | 🕒 {time_str}")
+            else:
+                st.sidebar.info("尚無行為紀錄")

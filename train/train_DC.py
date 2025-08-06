@@ -27,7 +27,7 @@ def parse_args():
     parser.add_argument("--hidden_dim2", type=int, default=192, help="Second hidden dimension for the autoencoder")
     parser.add_argument("--bottleneck_dim", type=int, default=96, help="Bottleneck dimension for the autoencoder")
 
-    parser.add_argument("--train_supervised", action='store_true', help="Flag to train the model in supervised mode")
+    parser.add_argument("--train_unsupervised", action='store_true', help="Flag to train the model in supervised mode")
     parser.add_argument("--supervised_label", type=str, default="category_large_group", help="Label to use for supervised training")
     parser.add_argument("--epochs", type=int, default=50, help="Number of epochs for training")
     parser.add_argument("--n_prototype", type=int, default=10, help="Number of prototypes for clustering")
@@ -172,8 +172,8 @@ def main():
 
     all_embeddings, df = load_data(args)
     # plot original embeddings
-    plot_embeddings_plotly(all_embeddings, logger=logger, task=task, titles=df['bi_title'], labels=df['category'], method='tsne', title="Original Embeddings - Category")
-    plot_embeddings_plotly(all_embeddings, logger=logger, task=task, titles=df['bi_title'], labels=df['category_large_group'], method='tsne', title="Original Embeddings - Category Large Group")
+    plot_embeddings_plotly(all_embeddings, logger=logger, task=task, titles=df['bi_title'], labels=df['category'], method='tsne', title="Original_Embeddings_Category")
+    plot_embeddings_plotly(all_embeddings, logger=logger, task=task, titles=df['bi_title'], labels=df['category_large_group'], method='tsne', title="Original_Embeddings_Category_Large_Group")
 
     # load autoencoder model
     autoencoder = AutoEncoder(args.input_dim, args.hidden_dim1, args.hidden_dim2, args.bottleneck_dim)
@@ -183,10 +183,10 @@ def main():
 
     # process embeddings
     encoded_embeddings = process_paragraph_embeddings(all_embeddings, autoencoder, device='cpu')
-    plot_embeddings_plotly(encoded_embeddings, logger=logger, task=task, titles=df['bi_title'], labels=df['category'], method='tsne', title='Emebddings (AutoEncoder) - Category')
-    plot_embeddings_plotly(encoded_embeddings, logger=logger, task=task, titles=df['bi_title'], labels=df['category_large_group'], method='tsne', title='Emebddings (AutoEncoder) - Category')
+    _ = plot_embeddings_plotly(encoded_embeddings, logger=logger, task=task, titles=df['bi_title'], labels=df['category'], method='tsne', title='Emebddings_AutoEncoder-Category')
+    _ = plot_embeddings_plotly(encoded_embeddings, logger=logger, task=task, titles=df['bi_title'], labels=df['category_large_group'], method='tsne', title='Emebddings_AutoEncoder_Category')
 
-    if args.train_supervised:
+    if not args.train_unsupervised:
         dataloader, n_prototype = get_supervised_dataset(encoded_embeddings, df, args.supervised_label)
         print(f"Number of prototypes: {n_prototype}")
         model = Clustering_Model(embed_dim=args.embed_dim, hidden_dim=args.hidden_dim, n_prototype=n_prototype)
@@ -194,7 +194,7 @@ def main():
 
         _, best_weight, _ = train_supervised(args, logger, model, dataloader)
     else:
-        dataloader = DataLoader(encoded_embeddings, batch_size=64, shuffle=True)
+        dataloader = DataLoader(encoded_embeddings, batch_size=64, shuffle=False)
         model = Clustering_Model(embed_dim=args.embed_dim, hidden_dim=args.hidden_dim, n_prototype=args.n_prototype)
         model.projector.bias.data.fill_(0)
 
@@ -212,8 +212,14 @@ def main():
         _, emb = model(embeddings)
     emb = emb.numpy()
 
-    plot_embeddings_plotly(emb, logger=logger, task=task, titles=df['bi_title'], labels=df['category'], method='tsne', title='Emebddings (AutoEncoder + Clustering) - Category')
-    plot_embeddings_plotly(emb, logger=logger, task=task, titles=df['bi_title'], labels=df['category_large_group'], method='tsne', title='Emebddings (AutoEncoder + Clustering) - Category Large Group')
+    torch.save(emb, "encoded_embeddings_category.pt")
+    # emb_dataset = Dataset.create(dataset_project="AI_recommender", dataset_name="encoded_embedding_db")
+    # emb_dataset.add_files("encoded_embeddings.pt")
+    # emb_dataset.upload()
+    # emb_dataset.finalize()
+
+    _ = plot_embeddings_plotly(emb, logger=logger, task=task, titles=df['bi_title'], labels=df['category'], method='tsne', title='Emebddings_AutoEncoder_Clustering_Category')
+    _ = plot_embeddings_plotly(emb, logger=logger, task=task, titles=df['bi_title'], labels=df['category_large_group'], method='tsne', title='Emebddings_AutoEncoder_Clustering_Category_Large_Group')
 
     task.close()
 
