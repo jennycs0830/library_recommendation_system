@@ -161,9 +161,3 @@ python create_faiss_db.py
 ```bash
 streamlit run app.py
 ```
-
-Visit the running app at: [http://localhost:8501](http://localhost:8501)
-
----
-
-✅ You're all set! The full recommendation system should now be functional with Docker, PostgreSQL, FAISS, ClearML tracking, and a Streamlit frontend.
