@@ -21,7 +21,7 @@ def parse_args():
     
     parser.add_argument("--lr", type=float, default=0.001, help="Learning rate for the optimizer")
     parser.add_argument("--batch_size", type=int, default=64, help="Batch sizeq for training")
-    parser.add_argument('--epochs', type=int, default=250, help="Number of epochs for training")
+    parser.add_argument('--epochs', type=int, default=100, help="Number of epochs for training")
     parser.add_argument('--input_dim', type=int, default=768, help="Input dimension for the model")
     parser.add_argument('--hidden_dim1', type=int, default=512, help="First hidden dimension for the model")
     parser.add_argument('--hidden_dim2', type=int, default=192, help="Second hidden dimension for the model")

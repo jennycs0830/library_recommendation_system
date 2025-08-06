@@ -212,11 +212,11 @@ def main():
         _, emb = model(embeddings)
     emb = emb.numpy()
 
-    torch.save(emb, "encoded_embeddings_category.pt")
-    # emb_dataset = Dataset.create(dataset_project="AI_recommender", dataset_name="encoded_embedding_db")
-    # emb_dataset.add_files("encoded_embeddings.pt")
-    # emb_dataset.upload()
-    # emb_dataset.finalize()
+    torch.save(emb, "encoded_embeddings.pt")
+    emb_dataset = Dataset.create(dataset_project="AI_recommender", dataset_name="encoded_embedding_db")
+    emb_dataset.add_files("encoded_embeddings.pt")
+    emb_dataset.upload()
+    emb_dataset.finalize()
 
     _ = plot_embeddings_plotly(emb, logger=logger, task=task, titles=df['bi_title'], labels=df['category'], method='tsne', title='Emebddings_AutoEncoder_Clustering_Category')
     _ = plot_embeddings_plotly(emb, logger=logger, task=task, titles=df['bi_title'], labels=df['category_large_group'], method='tsne', title='Emebddings_AutoEncoder_Clustering_Category_Large_Group')
