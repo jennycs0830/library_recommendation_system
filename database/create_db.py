@@ -6,8 +6,8 @@ import os
 
 conn = psycopg2.connect(
     dbname="library_db",
-    user="[your username]",
-    password="[your password]",
+    user="postgres",
+    password="postgres",
     host="localhost",
     port="5432",
 )

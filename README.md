@@ -33,7 +33,6 @@ clearml-init
 
 ### 4. Upload Data to ClearML
 ```bash
-# books csv file
 python clearml_dataset_upload.py --dataset_name books_with_intro --upload_files data/books_with_intro.csv
 ```
 ### 5. Run preprocessing
@@ -71,9 +70,8 @@ sudo -u postgres psql
 
 Then in the PostgreSQL shell:
 ```sql
-CREATE USER library_user WITH PASSWORD 'your_secure_password';
 CREATE DATABASE library_db;
-GRANT ALL PRIVILEGES ON DATABASE library_db TO library_user;
+ALTER USER postgres PASSWORD 'postgres';
 \q
 ```
 
@@ -119,7 +117,7 @@ DB_PASSWORD=[your password]
 OPENAI_API_KEY=[your api key]
 ```
 
-### 12. Launch Streamlit App
+### 13. Launch Streamlit App
 ```bash
 streamlit run app.py
 ```

@@ -34,7 +34,7 @@ def log_interaction(user_id, book_id, interaction_type):
             book_embedding = np.array(book_embedding)
 
             # Step 5: Update user embedding
-            updated_user_embedding = 0.9 * user_embedding + 0.1 * book_embedding
+            updated_user_embedding = 0.6 * user_embedding + 0.4 * book_embedding
 
             # Step 6: Save back to DB
             cur.execute(

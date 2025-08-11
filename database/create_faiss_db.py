@@ -6,8 +6,8 @@ import faiss
 def connect_db():
     conn = psycopg2.connect(
         dbname="library_db",
-        user="jenny0830",
-        password="jenny0830",
+        user="postgres",
+        password="postgres",
         host="localhost",
         port="5432"
     )
