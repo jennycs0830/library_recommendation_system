@@ -8,3 +8,4 @@ data/encoded_embeddings.pt
 test.ipynb
 docker-compose.yml
 components/.env
+train/plot
