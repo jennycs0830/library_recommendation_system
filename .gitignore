@@ -7,3 +7,4 @@ database/faiss_books.index
 data/encoded_embeddings.pt
 test.ipynb
 docker-compose.yml
+components/.env

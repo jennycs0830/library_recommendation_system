@@ -7,6 +7,9 @@ from PIL import Image
 from io import BytesIO
 import requests
 import psycopg2
+from dotenv import load_dotenv
+
+load_dotenv()
 
 DATA_FOLDER = "data"
 DEFAULT_IMAGE_PATH = os.path.join(DATA_FOLDER, "default_cover.jpeg")
@@ -43,10 +46,10 @@ def get_book_metadata(book_ids):
 def get_pg_connection():
     return psycopg2.connect(
         dbname="library_db",
-        user="[your user name]",
-        password="[your password]",
-        host="localhost",
-        port="5432"
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        host=os.getenv("DB_HOST"),
+        port=os.getenv("DB_PORT")
     )
 
 def fetch_image_cached(url):

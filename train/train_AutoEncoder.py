@@ -162,7 +162,7 @@ def main():
     torch.save(model.state_dict(), model_path)
     print(f"Best model saved to {model_path}")
 
-    logger.upload_artifact(model_path, name=model_path, metadata={"description": "Best AutoEncoder model after training"})
+    task.upload_artifact(model_path, name=model_path, metadata={"description": "Best AutoEncoder model after training"})
     task.close()
 
 if __name__ == "__main__":

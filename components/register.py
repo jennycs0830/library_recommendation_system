@@ -5,10 +5,13 @@ import psycopg2
 import openai
 import torch
 from sentence_transformers import SentenceTransformer
+from dotenv import load_dotenv
 
 from components.utils import encode_user_embedding, get_pg_connection
 
-openai.api_key = "[your openai key]"
+load_dotenv()
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @ st.cache_resource
 def load_embedding_model():

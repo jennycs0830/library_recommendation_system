@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 import torch
-from clearml import Dataset, Task
+from clearml import Dataset, Task, OutputModel
 from tqdm import tqdm
 import torch.nn.functional as F
 from sklearn.cluster import KMeans
@@ -204,6 +204,8 @@ def main():
     torch.save(best_weight, "best_deepcluster_model.pt")
     task.upload_artifact(name="best_deepcluster_model", artifact_object="best_deepcluster_model.pt")
     print("Best model saved as 'best_deepcluster_model.pt'")
+    output_model = OutputModel(task=task, framework="PyTorch")
+    output_model.update_weights(weights_filename="best_deepcluster_model.pt")
 
     # eval
     model.eval()
