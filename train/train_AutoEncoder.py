@@ -163,6 +163,9 @@ def main():
     print(f"Best model saved to {model_path}")
 
     task.upload_artifact(model_path, name=model_path, metadata={"description": "Best AutoEncoder model after training"})
+    output_model = OutputModel(task=task, framework="PyTorch")
+    output_model.update_weights(weights_filename=model_path)
+
     task.close()
 
 if __name__ == "__main__":
