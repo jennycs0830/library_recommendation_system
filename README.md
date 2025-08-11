@@ -1,87 +1,75 @@
+# Library Recommendation System
 
-# 📚 Library Recommendation System
+This project is an AI-powered book recommendation system featuring a complete pipeline, including embedding generation, autoencoder training, clustering, FAISS vector database, PostgreSQL storage, ClearML experiment tracking, and a Streamlit frontend.
 
-This project is an AI-powered book recommendation system with a full-stack pipeline including embedding generation, autoencoder training, clustering, FAISS vector DB, PostgreSQL storage, ClearML experiment tracking, and a Streamlit frontend.
+## System Architecture
+The library recommendation system consists of two main workflow: **Embedding Construction** and **Recommendation & Interaction**.
 
----
 
-## 🚀 Setup Instructions
-
-### 1. 📥 Clone the Repository
+## Usage 
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/jennycs0830/library_recommendation_system.git
 cd library_recommendation_system
 ```
 
-### 2. 📦 Install Python Dependencies
-
-Make sure you're using a virtual environment, then run:
-
+### 2. Install Python Dependencies
+It is recommended to use a virtual environment. Then install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. 🛠️ Build Docker Images
+### 3. Set Up ClearML
 
-Ensure Docker is installed and running.
-
-#### 🔹 Autoencoder API Image
-
-```bash
-docker build -f docker/Dockerfile.autoencoder -t autoencoder-api .
-```
-
-#### 🔹 Clustering API Image
-
-```bash
-docker build -f docker/Dockerfile.clustering -t clustering-api .
-```
-
-### 4. 🧱 Run Docker Containers
-
-#### 🔹 Autoencoder API (http://localhost:8002/encode)
-
-```bash
-docker run -d --name autoencoder-api -p 8002:8002 autoencoder-api
-```
-
-#### 🔹 Clustering API (http://localhost:8003/encode)
-
-```bash
-docker run -d --name clustering-api -p 8003:8003 clustering-api
-```
-
-### 5. ☁️ Set Up ClearML
-
-1. Go to [ClearML Login](https://app.clear.ml/login) and register.
+1. Register at [ClearML](https://app.clear.ml/login).
 2. Navigate to: `Settings > Workspace > Create new credentials`
 3. Copy the generated configuration block.
 4. Run the setup:
-
 ```bash
 clearml-init
 ```
+5. Paste the block when prompted. This will generate the `.clearml.conf` config file.
 
-Paste the block when prompted. This will generate the `.clearml.conf` config file.
-
-### 6. 🗃️ Install and Set Up PostgreSQL
-
-#### 🔹 On Ubuntu / Debian
-
+### 4. Upload Data to ClearML
 ```bash
-sudo apt update
-sudo apt install postgresql postgresql-contrib
+# books csv file
+python clearml_dataset_upload.py --dataset_name books_with_intro --upload_files data/books_with_intro.csv
 ```
+### 5. Run preprocessing
+Run data cleaning, embedding generation using SentenceTransformer, and train/test split:
+```bash
+cd train
+python preprocessing.py
+```
+**Uploaded ClearML datasets ([dataset_project]-[dataset_name]-[file_name]):**
+- `AI_recommender-books_with_intro-books_with_intro.csv`
+- `AI_recommender-books_with_intro_cleaned-books_with_intro_cleaned.csv`
+- `AI_recommender-embeddings_db-all_embeddings.pt`
+- `AI_recommender-embeddings_db-train_embeddings.pt`
+- `AI_recommender-embeddings_db-test_embeddings.pt`
 
-#### 🔹 Create a PostgreSQL User and Database
+### 6. Train AutoEncoder
+```bash
+python train_AutoEncoder.py
+```
+- Output model file will be stored in the `train/` directory.
 
+### 7. Train Clustering Model & Generate Encoded Embeddings
+Check the autoencoder model filename locally, then run:
+```bash
+python train_DC.py --autoencoder_file [autoencoder_model_filename]
+```
+**Uploaded ClearML dataset:**
+- `AI_recommender-encoded_embedding_db-encoded_embeddings.csv`
+
+### 8. Install and Set Up PostgreSQL
+Create a PostgreSQL User and Database
 ```bash
 sudo -u postgres psql
 ```
 
 Then in the PostgreSQL shell:
-
 ```sql
 CREATE USER library_user WITH PASSWORD 'your_secure_password';
 CREATE DATABASE library_db;
@@ -89,75 +77,49 @@ GRANT ALL PRIVILEGES ON DATABASE library_db TO library_user;
 \q
 ```
 
-#### 🔹 Verify PostgreSQL Setup
-
-```bash
-psql -U library_user -d library_db -h localhost
-```
-
-When connected, type:
-
-```sql
-\dt
-\q
-```
-
-### 7. 📚 Generate Initial Embeddings
-
-#### 🔸 Upload book data to ClearML
-
-```bash
-python clearml_dataset_upload.py --dataset_name "books_with_intro" --upload_files "data/books_with_intro.csv"
-```
-
-#### 🔸 Run preprocessing (cleaning, SentenceTransformer, train/test split)
-
-```bash
-cd train
-python preprocessing.py
-```
-
-**Uploaded ClearML datasets:**
-
-- `AI_recommender-books_with_intro-books_with_intro.csv`
-- `AI_recommender-books_with_intro_cleaned-books_with_intro_cleaned.csv`
-- `AI_recommender-embeddings_db-all_embeddings.pt`
-- `AI_recommender-embeddings_db-train_embeddings.pt`
-- `AI_recommender-embeddings_db-test_embeddings.pt`
-
-### 8. 🧠 Train AutoEncoder
-
-```bash
-python train_AutoEncoder.py
-```
-
-- Output model file will be stored in the `train/` directory.
-
-### 9. 🧪 Train Clustering Model & Generate Encoded Embeddings
-
-```bash
-python train_DC.py --autoencoder_file [autoencoder_model_filename]
-```
-
-**Uploaded ClearML dataset:**
-
-- `AI_recommender-encoded_embedding_db-encoded_embeddings.csv`
-
-### 10. 🗂️ Create Databases (PostgreSQL + FAISS)
-
+### 9. Create Databases (PostgreSQL + FAISS)
+Initial Postgres
 ```bash
 cd ../database
 python create_db.py
 python create_faiss_db.py
 ```
 
-### 11. 🔧 Configure API Keys and DB Credentials
+### 10. Build Docker Images
+Ensure Docker is installed and running.
 
-- **OpenAI API Key:** `components/register.py` (line 11)
-- **PostgreSQL credentials:** `components/utils.py` (lines 46–47)
+#### Autoencoder API Image
+```bash
+docker build -f docker/Dockerfile.autoencoder -t autoencoder-api .
+```
+#### Clustering API Image
+```bash
+docker build -f docker/Dockerfile.clustering -t clustering-api .
+```
 
-### 12. 🖥️ Launch Streamlit App
+### 11. Run Docker Containers
 
+#### Autoencoder API (http://localhost:8002/encode)
+```bash
+docker run -d --name autoencoder-api -p 8002:8002 autoencoder-api
+```
+
+#### Clustering API (http://localhost:8003/encode)
+```bash
+docker run -d --name clustering-api -p 8003:8003 clustering-api
+```
+### 12. Configure API Keys and DB Credentials
+
+Create a `.env` file in the `components` folder. Example:
+```bash
+DB_HOST=[your host]
+DB_PORT=[your port]
+DB_USER=[your username]
+DB_PASSWORD=[your password]
+OPENAI_API_KEY=[your api key]
+```
+
+### 12. Launch Streamlit App
 ```bash
 streamlit run app.py
 ```
