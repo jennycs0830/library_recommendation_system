@@ -52,6 +52,7 @@ def split_data(args, embeds):
         return torch.empty(0, input_dim)
 
     return torch.cat(chunks, dim=0) 
+
 def load_data(args, path):
     all_embeddings = torch.load(os.path.join(path, args.all_embeddings_file))
 
@@ -186,7 +187,7 @@ def main():
     torch.save(model.state_dict(), model_path)
     print(f"Best model saved to {model_path}")
 
-    task.upload_artifact(model_path, name=model_path, metadata={"description": "Best AutoEncoder model after training"})
+    task.upload_artifact(name=model_path, artifact_object=model_path)
     output_model = OutputModel(task=task, framework="PyTorch")
     output_model.update_weights(weights_filename=model_path)
 
