@@ -44,7 +44,7 @@ def main():
 
     dataset = Dataset.get(dataset_name=args.dataset_name, dataset_project="AI_recommender")
     path = dataset.get_local_copy()
-    df = pd.read_csv(os.path.join(path, args.dataset_file), header=1)
+    df = pd.read_csv(os.path.join(path, args.dataset_file), header=0) # header 1
     print(f"Dataset {args.dataset_name} downloaded to {path}")
     print(f"Dataset shape: {df.shape}")
 

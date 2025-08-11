@@ -33,14 +33,38 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+def split_data(args, embeds):
+    input_dim = args.input_dim
+    chunks = []
+
+    for arr in embeds:
+        t = torch.as_tensor(arr, dtype=torch.float32)
+        t = t.flatten()  # ensure 1D
+        remainder = t.numel() % input_dim
+        if remainder != 0:
+            pad_len = input_dim - remainder
+            t = torch.cat([t, t[:pad_len]], dim=0)
+        num_chunks = t.numel() // input_dim
+        t = t.view(num_chunks, input_dim)
+        chunks.append(t)
+
+    if len(chunks) == 0:
+        return torch.empty(0, input_dim)
+
+    return torch.cat(chunks, dim=0) 
 def load_data(args, path):
     all_embeddings = torch.load(os.path.join(path, args.all_embeddings_file))
 
     train_embeddings = torch.load(os.path.join(path, args.training_file))
+    train_embeddings = split_data(args, train_embeddings)
+    print(f"Len of training data: {len(train_embeddings)}")
+    train_embeddings = torch.tensor(train_embeddings)
     train_set = TensorDataset(train_embeddings)
     train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True)
 
     test_embeddings = torch.load(os.path.join(path, args.testing_file))
+    test_embeddings = split_data(args, test_embeddings)
+    train_embeddings = torch.tensor(test_embeddings)
     test_set = TensorDataset(test_embeddings)
     test_loader = DataLoader(test_set, batch_size=args.batch_size, shuffle=False)  
 
