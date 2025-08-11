@@ -25,7 +25,8 @@ create_user_table = """
         user_age TEXT,
         user_genres TEXT,
         user_profile TEXT,
-        user_embedding FLOAT8[],
+        user_embedding_prev FLOAT8[],
+        user_embedding_cur FLOAT8[],
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 """

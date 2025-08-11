@@ -28,14 +28,14 @@ def user_exists(username):
 
 def insert_user(username, user_profile, user_embedding, gender, age, genres):
     create_user = """
-        INSERT INTO users (username, user_gender, user_age, user_genres, user_profile, user_embedding)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT INTO users (username, user_gender, user_age, user_genres, user_profile, user_embedding_cur, user_embedding_prev)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
         RETURNING user_id;
     """
     with get_pg_connection() as conn:
         with conn.cursor() as cur:
             genres = ", ".join(genres)
-            values = (username, gender, age, genres, user_profile, user_embedding)
+            values = (username, gender, age, genres, user_profile, user_embedding, [])
             cur.execute(create_user, values)
             user_id = cur.fetchone()[0]
             conn.commit()
@@ -44,30 +44,40 @@ def insert_user(username, user_profile, user_embedding, gender, age, genres):
     return user_id
 
 def generate_user_profile(gender, age, genres, q1, q2, q3, q4):
-    prompt_template = f"""
-    你是一個圖書推薦系統的助手，請根據以下使用者基本資料與問卷回答，建立一段語意化的閱讀偏好檔案，並列出使用者可能感興趣的主題與風格關鍵字。
+    prompt_template = """
+    你是一位有才華的創作家，專門為特定讀者群撰寫書籍，擅長依據讀者的興趣與需求構思精采的書名與吸引人的大綱。
 
-    ---
-
-    使用者基本資料：
+    ## 讀者資訊
+    - 年齡: {age}
     - 性別: {gender}
-    - 年齡層: {age}
-    - 偏好書籍類型: {", ".join(genres)}
+    - 偏好類型: {genres}
 
-    問卷回答：
-    1. 喜歡的書籍與原因：{q1}
-    2. 閱讀偏好的風格或主題：{q2}
-    3. 想閱讀的主題或內容：{q3}
-    4. 閱讀的價值與意義：{q4}
+    ## 使用者問卷回答
+    1. 印象深刻或喜歡的書籍與原因: {q1}
+    2. 閱讀時偏好風格或主題: {q2}
+    3. 下一本想讀的書主題或內容: {q3}
+    4. 閱讀對你最有價值的地方: {q4}
 
-    ---
+    ## 生成要求
+    - 根據以上資訊，生成 **3 本書** 的推薦範例
+    - 每本書須包含：
+    1. **書名**（吸引人、符合讀者品味）
+    2. **大綱**（不少於 50 字，避免過於簡略，應有情節、背景、主題）
+    - 語氣與內容需符合 {genres} 類型
+    - 適合 {age} 歲 {gender} 的讀者
+    - 保持創意，但需貼近讀者可能喜愛的題材
 
-    請執行以下兩項任務：
+    ## 參考範例
+    1. 書名: 青石街的午後  
+    大綱: 在舊城區的一條青石街上，開著一家小咖啡館的女子，每日觀察街上形形色色的路人。一次偶然的相遇，讓她卷入一位失語畫家的故事。畫布上的顏色，訴說著無人知曉的孤獨與渴望。細膩的筆觸描繪生活的縫隙，探討人與人之間微妙的連結與治癒。
 
-    ### 一、請用自然且具語意的語氣，撰寫一段使用者的閱讀風格與偏好描述，不需重複列出題目與答案。請綜合所有資訊，具體說明此人偏好什麼樣的書、閱讀動機為何、適合什麼主題與風格等。請避免逐條回答，而是寫成一段具有邏輯與語感的文字。
+    2. 書名: 第十三封信  
+    大綱: 一名圖書館管理員在整理舊藏書時，發現一本書中夾著十二封匿名信，信中預告了一連串的失蹤事件。當第十三封信出現時，信上寫的名字竟是她自己。她必須在時間耗盡前，破解字裡行間的暗號，揭開隱藏在城市深處的真相。
 
-    ### 二、請根據你的分析，列出 5～10 個與此使用者高度相關的「閱讀偏好關鍵字」，這些可以是主題（如：心理學）、風格（如：黑色幽默）、價值觀（如：自我成長）、書籍形式（如：報導文學）等。請以 bullet point 條列方式呈現，內容需具語意與概括性，避免只是重複原句中的片段。
+    3. 書名: 流光編織者  
+    大綱: 在未來的極地城市，一位年輕的編織師擁有將光線編成實體的能力。當能源枯竭危機逼近，她的作品成為唯一能喚醒沉睡能源核心的鑰匙。故事融合科技與詩意，刻畫創造與毀滅之間的掙扎，以及藝術如何成為拯救世界的力量。
 
+    請依據以上範例與讀者資訊，生成新的書名與大綱：
     """
 
     response = openai.ChatCompletion.create(
