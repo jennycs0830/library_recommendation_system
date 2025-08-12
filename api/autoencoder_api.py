@@ -6,8 +6,10 @@ from train.models.AutoEncoder import AutoEncoder
 
 app = FastAPI()
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 model = AutoEncoder(input_dim=768, hidden_dim1=512, hidden_dim2=192, bottleneck_dim=96)
-model.load_state_dict(torch.load("train/best_autoencoder_20250731_210546.pt"))
+model.load_state_dict(torch.load("train/best_autoencoder.pt", map_location=device))
 model.eval()
 
 class EmbeddingRequest(BaseModel):

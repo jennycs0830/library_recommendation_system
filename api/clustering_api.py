@@ -6,8 +6,10 @@ from train.models.Clutering import Clustering_Model
 
 app = FastAPI()
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 model = Clustering_Model(embed_dim=768, hidden_dim=256, n_prototype=9)
-model.load_state_dict(torch.load("train/best_deepcluster_model.pt"))
+model.load_state_dict(torch.load("train/best_deepcluster_model.pt", map_location=device))
 model.eval()
 
 class EmbeddingRequest(BaseModel):
