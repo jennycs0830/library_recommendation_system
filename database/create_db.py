@@ -74,50 +74,50 @@ print(f"Table users: DONE")
 cur.execute(create_interaction_table)
 print(f"Table interactions: DONE")
 
-cur.execute(create_book_table)
-# Insert initial data into the books table
-with open("../data/books_with_intro.csv", "r") as f:
-    df = pd.read_csv(f)
-    for index, row in df.iterrows():
-        cur.execute(
-            """
-            INSERT INTO books (bi_id, isbn, call_number, title, image_url, author, content, publisher, publisher_year, site, category, category_large_group)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """,
-            (
-                row['bi_id'],
-                row['bi_isbn'],
-                row['bi_class'],
-                row['bi_title'],
-                row['bi_image'],
-                row['bi_auther'],
-                row['bi_content'],
-                row['bi_publisher'],
-                row['bi_publisher_year'],
-                row['bi_site'],
-                row['category'],
-                row['category_large_group']
-            )
-        )       
-print(f"Table books: DONE")
+# cur.execute(create_book_table)
+# # Insert initial data into the books table
+# with open("../data/books_with_intro.csv", "r") as f:
+#     df = pd.read_csv(f)
+#     for index, row in df.iterrows():
+#         cur.execute(
+#             """
+#             INSERT INTO books (bi_id, isbn, call_number, title, image_url, author, content, publisher, publisher_year, site, category, category_large_group)
+#             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+#             """,
+#             (
+#                 row['bi_id'],
+#                 row['bi_isbn'],
+#                 row['bi_class'],
+#                 row['bi_title'],
+#                 row['bi_image'],
+#                 row['bi_auther'],
+#                 row['bi_content'],
+#                 row['bi_publisher'],
+#                 row['bi_publisher_year'],
+#                 row['bi_site'],
+#                 row['category'],
+#                 row['category_large_group']
+#             )
+#         )       
+# print(f"Table books: DONE")
 
-cur.execute(create_book_embedding_table)
-# Insert initial data into the book_embeddings table
-# dataset = Dataset.get(dataset_project="AI_recommender", dataset_name="encoded_embedding_db")
-# embeddings_path = dataset.get_local_copy()
-# print(f"Dataset embeddings_db downloaded to {embeddings_path}")
-embeddings = torch.load("../data/encoded_embeddings.pt", weights_only=False)
+# cur.execute(create_book_embedding_table)
+# # Insert initial data into the book_embeddings table
+# # dataset = Dataset.get(dataset_project="AI_recommender", dataset_name="encoded_embedding_db")
+# # embeddings_path = dataset.get_local_copy()
+# # print(f"Dataset embeddings_db downloaded to {embeddings_path}")
+# embeddings = torch.load("../data/encoded_embeddings.pt", weights_only=False)
 
-for book_id, embedding in enumerate(embeddings):
-    cur.execute(
-        """
-        INSERT INTO book_embeddings (book_id, embedding)
-        VALUES (%s, %s)
-        ON CONFLICT (book_id) DO UPDATE SET embedding = EXCLUDED.embedding;
-        """,
-        (book_id + 1, embedding.tolist())
-    )
-print(f"Table book_embedding: DONE")
+# for book_id, embedding in enumerate(embeddings):
+#     cur.execute(
+#         """
+#         INSERT INTO book_embeddings (book_id, embedding)
+#         VALUES (%s, %s)
+#         ON CONFLICT (book_id) DO UPDATE SET embedding = EXCLUDED.embedding;
+#         """,
+#         (book_id + 1, embedding.tolist())
+#     )
+# print(f"Table book_embedding: DONE")
 
 conn.commit()
 

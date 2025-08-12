@@ -20,7 +20,7 @@ def log_interaction(user_id, book_id, interaction_type):
             print("ACTION: log interaction")
 
             # Step 2: Get current user embedding
-            cur.execute("SELECT user_embedding FROM users WHERE user_id = %s;", (user_id,))
+            cur.execute("SELECT user_embedding_cur FROM users WHERE user_id = %s;", (user_id,))
             user_embedding = cur.fetchone()[0]
             print("ACTION: get current user embedding")
 

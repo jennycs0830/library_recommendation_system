@@ -13,36 +13,44 @@ faiss_index = faiss.read_index(FAISS_INDEX_PATH)
 
 def get_user_embedding(user_id):
     with get_pg_connection() as conn:
+        print("Get connection.")
         with conn.cursor() as cur:
+            print("Execute SQL")
             cur.execute("SELECT user_embedding_cur FROM users WHERE user_id = %s", (user_id,))
             row = cur.fetchone()
             if row:
                 user_embedding_cur = np.array(row[0], dtype=np.float32)
-            else:
-                user_embedding_cur = None
-
+                print(f"Get user_embedding_cur, with shape: {user_embedding_cur.shape}")
+            
             cur.execute("SELECT user_embedding_prev FROM users WHERE user_id = %s", (user_id,))
             row = cur.fetchone()
             if row:
                 user_embedding_prev = np.array(row[0], dtype=np.float32)
+                print(f"Get user_embedding_prev, with shape: {user_embedding_prev.shape}")
             else:
                 user_embedding_prev = user_embedding_cur
-                
+            
     return user_embedding_cur, user_embedding_prev
 
 def get_top_n_recommendations(user_id, n=6):
     user_embedding_cur, user_embedding_prev = get_user_embedding(user_id)
     
     recommendation_list = []
-    num = n // 2
-    D, I = faiss_index.search(user_embedding_cur.reshape(1, -1), num)
-    for idx in I[0].tolist():
-        recommendation_list.append(idx)
-        
-    D, I = faiss_index.search(user_embedding_prev.reshape(1, -1), n - num)
-    for idx in I[0].tolist():
-        recommendation_list.append(idx)
-    return recommendation_list
+    if user_embedding_prev.shape[0] == 0:
+        print("Only cur embedding existed.")
+        D, I = faiss_index.search(user_embedding_cur.reshape(1, -1), n)
+        return I[0].tolist()
+    else:
+        print("Both cur and prev embedding exsited.")
+        num = n // 2
+        D, I = faiss_index.search(user_embedding_cur.reshape(1, -1), num)
+        for idx in I[0].tolist():
+            recommendation_list.append(idx)
+            
+        D, I = faiss_index.search(user_embedding_prev.reshape(1, -1), n - num)
+        for idx in I[0].tolist():
+            recommendation_list.append(idx)
+        return recommendation_list
 
 def show_recommendations(user_id):
     st.subheader("🎯 推薦書單")

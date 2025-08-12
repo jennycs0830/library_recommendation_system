@@ -44,7 +44,7 @@ def insert_user(username, user_profile, user_embedding, gender, age, genres):
     return user_id
 
 def generate_user_profile(gender, age, genres, q1, q2, q3, q4):
-    prompt_template = """
+    prompt_template = f"""
     你是一位有才華的創作家，專門為特定讀者群撰寫書籍，擅長依據讀者的興趣與需求構思精采的書名與吸引人的大綱。
 
     ## 讀者資訊
