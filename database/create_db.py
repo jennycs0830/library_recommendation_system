@@ -44,7 +44,7 @@ create_interaction_table = """
 create_book_table = """
     CREATE TABLE IF NOT EXISTS books (
         book_id SERIAL PRIMARY KEY,
-        bi_id VARCHAR(50) NOT NULL,
+        bi_id VARCHAR(50) NOT NULL UNIQUE,
         isbn VARCHAR(20),
         call_number VARCHAR(50) NOT NULL,
         title TEXT NOT NULL,
@@ -81,9 +81,27 @@ with open("../data/books_with_intro.csv", "r") as f:
     for index, row in df.iterrows():
         cur.execute(
             """
-            INSERT INTO books (bi_id, isbn, call_number, title, image_url, author, content, publisher, publisher_year, site, category, category_large_group)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """,
+            INSERT INTO books (
+                bi_id, isbn, call_number, title, image_url, author, content,
+                publisher, publisher_year, site, category, category_large_group
+            ) 
+            VALUES (
+                %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s
+            )
+            ON CONFLICT (bi_id) DO UPDATE
+            SET
+                isbn = EXCLUDED.isbn,
+                call_number = EXCLUDED.call_number,
+                title = EXCLUDED.title,
+                image_url = EXCLUDED.image_url,
+                author = EXCLUDED.author,
+                content = EXCLUDED.content,
+                publisher = EXCLUDED.publisher,
+                publisher_year = EXCLUDED.publisher_year,
+                site = EXCLUDED.site,
+                category = EXCLUDED.category,
+                category_large_group = EXCLUDED.category_large_group;""",
             (
                 row['bi_id'],
                 row['bi_isbn'],
